@@ -1,0 +1,4 @@
+docs/tradingbot_technical_blueprint.md  @you
+schemas/*                                @you
+compose/*                                 @you
+services/**                               @you

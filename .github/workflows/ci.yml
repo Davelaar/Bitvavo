@@ -1,0 +1,18 @@
+name: CI
+on: [push, pull_request]
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: { python-version: "3.11" }
+      - run: pip install jsonschema yamllint
+      - name: Blueprint pin
+        run: bash scripts/check_blueprint.sh
+      - name: Terms lint
+        run: bash scripts/lint_terms.sh
+      - name: Event schema validation (samples)
+        run: python scripts/validate_events.py
+      - name: Infra checks
+        run: bash scripts/validate_infra.sh

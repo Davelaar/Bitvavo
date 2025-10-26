@@ -1,0 +1,40 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "signals",
+  "type": "object",
+  "required": [
+    "ts",
+    "pair",
+    "intent",
+    "score",
+    "alpha",
+    "ttl_ms"
+  ],
+  "properties": {
+    "ts": {
+      "type": "integer"
+    },
+    "pair": {
+      "type": "string",
+      "pattern": "^[A-Z0-9]+-[A-Z0-9]+$"
+    },
+    "intent": {
+      "type": "string",
+      "enum": [
+        "BUY",
+        "SELL",
+        "EXIT"
+      ]
+    },
+    "score": {
+      "type": "number"
+    },
+    "alpha": {
+      "type": "string"
+    },
+    "ttl_ms": {
+      "type": "integer"
+    }
+  },
+  "additionalProperties": false
+}

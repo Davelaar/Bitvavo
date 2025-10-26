@@ -1,0 +1,39 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "orders.new",
+  "type": "object",
+  "required": [
+    "ts",
+    "pair",
+    "side",
+    "amount",
+    "limit",
+    "client_id"
+  ],
+  "properties": {
+    "ts": {
+      "type": "integer"
+    },
+    "pair": {
+      "type": "string",
+      "pattern": "^[A-Z0-9]+-[A-Z0-9]+$"
+    },
+    "side": {
+      "type": "string",
+      "enum": [
+        "BUY",
+        "SELL"
+      ]
+    },
+    "amount": {
+      "type": "string"
+    },
+    "limit": {
+      "type": "string"
+    },
+    "client_id": {
+      "type": "string"
+    }
+  },
+  "additionalProperties": false
+}

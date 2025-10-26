@@ -1,0 +1,35 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "universe.candidates",
+  "type": "object",
+  "required": [
+    "ts",
+    "pair",
+    "bid",
+    "ask",
+    "spread_bps",
+    "vol24h_eur"
+  ],
+  "properties": {
+    "ts": {
+      "type": "integer"
+    },
+    "pair": {
+      "type": "string",
+      "pattern": "^[A-Z0-9]+-[A-Z0-9]+$"
+    },
+    "bid": {
+      "type": "number"
+    },
+    "ask": {
+      "type": "number"
+    },
+    "spread_bps": {
+      "type": "number"
+    },
+    "vol24h_eur": {
+      "type": "number"
+    }
+  },
+  "additionalProperties": false
+}

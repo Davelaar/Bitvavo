@@ -1,0 +1,8 @@
+services:
+  # placeholders; je eigen core compose staat server-side al
+  grafana:
+    image: grafana/grafana:latest
+  prometheus:
+    image: prom/prometheus:latest
+  loki:
+    image: grafana/loki:2.9.4

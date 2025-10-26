@@ -1,0 +1,39 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "orders.fill",
+  "type": "object",
+  "required": [
+    "ts",
+    "pair",
+    "order_id",
+    "client_id",
+    "filled",
+    "avg_price",
+    "fee"
+  ],
+  "properties": {
+    "ts": {
+      "type": "integer"
+    },
+    "pair": {
+      "type": "string",
+      "pattern": "^[A-Z0-9]+-[A-Z0-9]+$"
+    },
+    "order_id": {
+      "type": "string"
+    },
+    "client_id": {
+      "type": "string"
+    },
+    "filled": {
+      "type": "string"
+    },
+    "avg_price": {
+      "type": "string"
+    },
+    "fee": {
+      "type": "string"
+    }
+  },
+  "additionalProperties": false
+}
