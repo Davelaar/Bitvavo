@@ -7,10 +7,6 @@ on:
     branches: [ main ]
   workflow_dispatch:
 
-concurrency:
-  group: bitvavo-${{ github.ref }}
-  cancel-in-progress: false
-
 jobs:
   ci:
     name: Validate infra
@@ -26,8 +22,8 @@ jobs:
 
   deploy:
     name: Deploy to production
-    if: github.ref == 'refs/heads/main'
     needs: ci
+    if: github.ref == 'refs/heads/main'
     runs-on: [self-hosted, linux, x64, vps, prod]
     environment:
       name: production
@@ -39,5 +35,6 @@ jobs:
           LE_EMAIL: r.davelaar@icloud.com
           DOMAIN: snapdiscounts.nl
         run: |
+          cd /srv/trading/tradingbot
           sudo -n make deploy
           sudo -n make status
