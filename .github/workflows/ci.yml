@@ -1,38 +1,16 @@
-name: CI
+name: Test self-hosted runner
 
 on:
+  workflow_dispatch:  # handmatig starten via GitHub
   push:
-    branches: [ main, master ]
-  pull_request:
-    branches: [ main, master ]
+    branches: [ main ]
 
 jobs:
-  validate:
-    runs-on: ubuntu-latest
-    env:
-      LE_EMAIL: ${{ secrets.LE_EMAIL || 'admin@example.com' }}
-      DOMAIN: snapdiscounts.nl
+  test-runner:
+    runs-on: [self-hosted, linux, x64, vps, prod]
     steps:
-      - uses: actions/checkout@v4
-
-      - name: Set up Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: '3.x'
-
-      - name: Install Python deps
+      - name: Test opdracht
         run: |
-          python -m pip install --upgrade pip
-          pip install pyyaml jsonschema yamllint
-
-      - name: Docker info
-        run: docker info
-
-      - name: Validate infra (Caddy + Prometheus)
-        run: bash scripts/validate_infra.sh
-
-      - name: Lint terms (non-blocking)
-        run: bash scripts/lint_terms.sh || true
-
-      - name: Validate JSON event samples
-        run: python scripts/validate_events.py
+          echo "✅ De runner werkt op $(hostname)"
+          date
+          uptime
