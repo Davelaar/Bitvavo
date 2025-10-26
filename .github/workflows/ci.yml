@@ -13,7 +13,7 @@ jobs:
       LE_EMAIL: ${{ secrets.LE_EMAIL || 'admin@example.com' }}
       DOMAIN: snapdiscounts.nl
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       - name: Set up Python
         uses: actions/setup-python@v5
