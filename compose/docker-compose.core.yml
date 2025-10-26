@@ -1,3 +1,4 @@
+---
 services:
   # placeholders; je eigen core compose staat server-side al
   grafana:
