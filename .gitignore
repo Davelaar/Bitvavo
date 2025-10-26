@@ -1,5 +1,15 @@
-.DS_Store
+# python/venv
+.venv/
 __pycache__/
 *.pyc
-.env
-.env.*
+
+# editors
+.vscode/
+.idea/
+
+# archives & bins
+*.zip
+*.tar*
+*.so
+*.exe
+*.bin
