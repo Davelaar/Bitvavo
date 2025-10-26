@@ -1,16 +1,43 @@
-name: Test self-hosted runner
+name: CI + Deploy (self-hosted)
 
 on:
-  workflow_dispatch:  # handmatig starten via GitHub
   push:
     branches: [ main ]
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:
+
+concurrency:
+  group: bitvavo-${{ github.ref }}
+  cancel-in-progress: false
 
 jobs:
-  test-runner:
+  ci:
+    name: Validate infra
     runs-on: [self-hosted, linux, x64, vps, prod]
     steps:
-      - name: Test opdracht
+      - uses: actions/checkout@v4
+      - name: Infra check (Caddy + Prometheus + JSON events)
+        env:
+          LE_EMAIL: r.davelaar@icloud.com
+          DOMAIN: snapdiscounts.nl
         run: |
-          echo "✅ De runner werkt op $(hostname)"
-          date
-          uptime
+          make ci
+
+  deploy:
+    name: Deploy to production
+    if: github.ref == 'refs/heads/main'
+    needs: ci
+    runs-on: [self-hosted, linux, x64, vps, prod]
+    environment:
+      name: production
+      url: https://snapdiscounts.nl
+    steps:
+      - uses: actions/checkout@v4
+      - name: Deploy
+        env:
+          LE_EMAIL: r.davelaar@icloud.com
+          DOMAIN: snapdiscounts.nl
+        run: |
+          sudo -n make deploy
+          sudo -n make status
