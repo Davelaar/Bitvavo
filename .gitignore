@@ -13,3 +13,10 @@ __pycache__/
 *.so
 *.exe
 *.bin
+# secrets & env
+trading-secrets.txt
+*.env
+secrets/
+# venvs & binaries
+.venv/
+*.so
