@@ -1,23 +1,38 @@
 name: CI
+
 on:
   push:
-  workflow_dispatch:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
 
 jobs:
   validate:
     runs-on: ubuntu-latest
     env:
-      DOMAIN: ${{ secrets.DOMAIN || 'snapdiscounts.nl' }}
-      LE_EMAIL: ${{ secrets.LE_EMAIL || 'r.davelaar@icloud.com' }}
+      LE_EMAIL: ${{ secrets.LE_EMAIL || 'admin@example.com' }}
+      DOMAIN: snapdiscounts.nl
     steps:
       - uses: actions/checkout@v4
-      - uses: docker/setup-buildx-action@v3
-      - name: Validate infra
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.x'
+
+      - name: Install Python deps
         run: |
-          bash scripts/validate_infra.sh
+          python -m pip install --upgrade pip
+          pip install pyyaml jsonschema yamllint
+
+      - name: Docker info
+        run: docker info
+
+      - name: Validate infra (Caddy + Prometheus)
+        run: bash scripts/validate_infra.sh
+
       - name: Lint terms (non-blocking)
-        run: |
-          bash scripts/lint_terms.sh || true
-      - name: Validate event samples
-        run: |
-          python3 scripts/validate_events.py
+        run: bash scripts/lint_terms.sh || true
+
+      - name: Validate JSON event samples
+        run: python scripts/validate_events.py

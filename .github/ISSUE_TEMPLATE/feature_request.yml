@@ -1,0 +1,20 @@
+name: Feature request
+description: Propose an improvement or new capability
+labels: [enhancement]
+body:
+  - type: textarea
+    id: summary
+    attributes:
+      label: Summary
+      description: What problem does this solve?
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposal
+      description: High-level design; configs or dashboards affected
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives considered
