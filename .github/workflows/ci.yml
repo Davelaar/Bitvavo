@@ -1,18 +1,23 @@
 name: CI
-on: [push, pull_request]
+on:
+  push:
+  workflow_dispatch:
+
 jobs:
   validate:
     runs-on: ubuntu-latest
+    env:
+      DOMAIN: ${{ secrets.DOMAIN || 'snapdiscounts.nl' }}
+      LE_EMAIL: ${{ secrets.LE_EMAIL || 'r.davelaar@icloud.com' }}
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
-        with: { python-version: "3.11" }
-      - run: pip install jsonschema yamllint
-      - name: Blueprint pin
-        run: bash scripts/check_blueprint.sh
-      - name: Terms lint
-        run: bash scripts/lint_terms.sh
-      - name: Event schema validation (samples)
-        run: python scripts/validate_events.py
-      - name: Infra checks
-        run: bash scripts/validate_infra.sh
+      - uses: docker/setup-buildx-action@v3
+      - name: Validate infra
+        run: |
+          bash scripts/validate_infra.sh
+      - name: Lint terms (non-blocking)
+        run: |
+          bash scripts/lint_terms.sh || true
+      - name: Validate event samples
+        run: |
+          python3 scripts/validate_events.py

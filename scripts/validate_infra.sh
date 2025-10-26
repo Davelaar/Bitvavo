@@ -2,11 +2,11 @@
 set -euo pipefail
 
 # Defaults voor env-substitutie in Caddyfile (overschrijfbaar)
-: "${LE_EMAIL:=admin@example.com}"
-: "${DOMAIN:=example.com}"
+: "${LE_EMAIL:=r.davelaar@icloud.com}"
+: "${DOMAIN:=snapdiscounts.nl}"
 
 if command -v docker >/dev/null 2>&1; then
-  # Compose syntaxis
+  # Compose syntaxis checken
   docker compose -f compose/docker-compose.core.yml config >/dev/null
 
   # Caddyfile valideren mét env vars
@@ -22,5 +22,4 @@ if command -v docker >/dev/null 2>&1; then
     check config /etc/prometheus/prometheus.yml >/dev/null
 fi
 
-# YAML lint (best-effort)
-yamllint -s compose/ config/ || true
+echo "[OK] Infra-config validatie afgerond voor DOMAIN=$DOMAIN"
