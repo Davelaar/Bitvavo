@@ -20,3 +20,4 @@ secrets/
 # venvs & binaries
 .venv/
 *.so
+grafana/
