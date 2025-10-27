@@ -1,0 +1,20 @@
+runtime:
+  log_level: INFO
+  metrics_port: 9102
+  interval_seconds: 60
+
+inputs:
+  universe_file: /srv/trading/common/universe_eur_trading_excl.jsonl
+  parquet_tickers_root: /srv/trading/data/parquet/tickers
+  max_files_per_market: 60
+  min_rows_per_market: 10
+
+selection:
+  target_size: 12
+  max_spread_bps: 40
+  require_bid_ask: true
+  always_include: ["BTC-EUR"]
+  exclude_markets: []
+
+output:
+  selection_file: /srv/trading/common/selection.latest.json
