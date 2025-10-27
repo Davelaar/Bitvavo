@@ -21,3 +21,6 @@ secrets/
 .venv/
 *.so
 grafana/
+services/*/venv/
+services/*/logs/
+services/*/*.zip
