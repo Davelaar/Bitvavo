@@ -1,0 +1,29 @@
+services:
+  ws_public_ingest:
+    container_name: ws_public_ingest
+    image: python:3.11-slim
+    working_dir: /app
+    restart: unless-stopped
+    command: bash -lc "./service.sh"
+    volumes:
+      - ./:/app:rw
+      - /srv/trading/data/parquet:/srv/trading/data/parquet:rw
+      - /srv/trading/common:/srv/trading/common:ro
+    environment:
+      - PYTHONUNBUFFERED=1
+    ports:
+      - "9101:9101"
+    depends_on:
+      - redis
+    networks:
+      - core
+
+  redis:
+    image: redis:7
+    container_name: redis
+    restart: unless-stopped
+    networks: [core]
+
+networks:
+  core:
+    external: true

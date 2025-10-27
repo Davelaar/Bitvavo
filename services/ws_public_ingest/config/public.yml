@@ -1,0 +1,31 @@
+# WS Public Ingest - config
+runtime:
+  log_level: INFO
+  metrics_port: 9101
+  parquet_root: /srv/trading/data/parquet
+  redis_dsn: redis://127.0.0.1:6379/0
+  # paths to universe and selection (canoniek)
+  universe_file: /srv/trading/common/universe_eur_trading_excl.jsonl
+  market_spec_file: /srv/trading/common/market_spec_v1.jsonl
+  selection_file: /srv/trading/common/selection.latest.json
+
+ws:
+  url: wss://ws.bitvavo.com/v2/
+  # reconnects
+  max_retries: 3
+  base_backoff_ms: 750
+
+subscribe:
+  ticker:
+    mode: universe   # universe | list
+    list: []         # only used if mode == list
+  trade:
+    mode: selection  # selection | list
+    list: [ "BTC-EUR" ]  # canary fallback; merged with selection if present
+  book:
+    mode: selection  # selection | list
+    list: [ "BTC-EUR" ]
+
+parquet:
+  rotation_seconds: 300   # 5 minutes
+  max_rows_per_file: 500000
