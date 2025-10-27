@@ -59,19 +59,10 @@ def latest_market_paths(root: Path, market: str, max_files: int):
     if not root.exists():
         return []
     paths = list(root.glob(f"date=*/market={market}/part-*.parquet"))
-    paths.sort(key=lambda p: p.stat().st_mtime, reverse=True)  # newest → oldest
+    paths.sort(key=lambda p: p.stat().st_mtime, reverse=True)
     return paths[:max_files]
 
-
-
-
-
 def scan_market(paths):
-    """
-    Lees elk Parquet-part afzonderlijk, converteer dictionary<str> naar str
-    en tel total_rows correct door.
-    """
-    import pyarrow as pa, pyarrow.parquet as pq
     total_rows = 0
     last_bid = None
     last_ask = None
@@ -80,43 +71,33 @@ def scan_market(paths):
     for pth in paths:
         try:
             tbl = pq.read_table(pth)
-        except Exception as e:
-            # dictionary-encoded 'market' kolom fix
-            try:
-                pf = pq.ParquetFile(pth)
-                tbls = [pf.read_row_group(i).replace_schema_metadata({}) for i in range(pf.num_row_groups)]
-                tbl = pa.concat_tables(tbls, promote=True)
-            except Exception:
-                # fallback: forceer type casting voor 'market' als die bestaat
-                try:
-                    tbl = pq.read_table(pth, columns=None)
-                    if 'market' in tbl.column_names:
-                        tbl = tbl.set_column(tbl.column_names.index('market'),
-                                             'market',
-                                             tbl['market'].cast(pa.string()))
-                except Exception:
-                    continue
+        except Exception:
+            continue
         total_rows += tbl.num_rows
         cols = set(tbl.column_names)
-        for c in ["bestBid","bid","lastBid","best_bid"]:
-            if c in cols:
-                last_bid = tbl[c][-1].as_py()
-                has_bid = True
-                break
-        for c in ["bestAsk","ask","lastAsk","best_ask"]:
-            if c in cols:
-                last_ask = tbl[c][-1].as_py()
-                has_ask = True
-                break
+
+        for candidate in ("bestBid","bid","lastBid","best_bid"):
+            if candidate in cols:
+                v = last_scalar(tbl, candidate)
+                if v is not None:
+                    last_bid = v; has_bid = True; break
+
+        for candidate in ("bestAsk","ask","lastAsk","best_ask"):
+            if candidate in cols:
+                v = last_scalar(tbl, candidate)
+                if v is not None:
+                    last_ask = v; has_ask = True; break
+
     spread_bps = None
     if has_bid and has_ask:
         try:
             bid = float(last_bid); ask = float(last_ask)
-            mid = (bid + ask)/2 if (bid != 0 and ask != 0) else None
-            if mid:
+            if bid > 0 and ask > 0:
+                mid = (bid + ask)/2.0
                 spread_bps = (ask - bid)/mid * 10000.0
         except Exception:
-            pass
+            spread_bps = None
+
     return {"rows": total_rows, "has_bid": has_bid, "has_ask": has_ask, "spread_bps": spread_bps}
 
 def choose_markets(universe, tick_root: Path, cfg: Dict):

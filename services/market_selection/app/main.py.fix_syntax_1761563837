@@ -63,63 +63,89 @@ def latest_market_paths(root: Path, market: str, max_files: int):
     return paths[:max_files]
 
 
-
-
-
 def scan_market(paths):
     """
-    Lees elk Parquet-part afzonderlijk, converteer dictionary<str> naar str
-    en tel total_rows correct door.
+    Combineer asynchrone ticker-updates:
+    - Lees elk part afzonderlijk (nieuw -> oud).
+    - Tel ALLE rijen in het venster.
+    - Neem per kant (bid/ask) de meest recente niet-lege waarde over ALLE parts.
+    - Kolomwaarden zijn strings volgens de docs; cast pas bij spread-berekening.
     """
-    import pyarrow as pa, pyarrow.parquet as pq
     total_rows = 0
     last_bid = None
     last_ask = None
-    has_bid = False
-    has_ask = False
+
+    # kandidaten volgens docs en codebase
+    bid_cols = ("bestBid","bid","lastBid","best_bid")
+    ask_cols = ("bestAsk","ask","lastAsk","best_ask")
+
+    def last_non_null_scalar(tbl, name):
+        try:
+            arr = tbl[name]
+        except Exception:
+            return None
+        chunks = getattr(arr, "chunks", []) or [arr]
+        for ch in reversed(chunks):
+            n = len(ch)
+            if n == 0 or (hasattr(ch, "null_count") and ch.null_count == n):
+                continue
+            for i in range(n-1, -1, -1):
+                if not ch.is_null(i):
+                    try:
+                        return ch[i].as_py()
+                    except Exception:
+                        return None
+        try:
+            return arr[-1].as_py()
+        except Exception:
+            return None
+
+    # parts zijn al nieuw->oud gesorteerd door caller
     for pth in paths:
         try:
             tbl = pq.read_table(pth)
-        except Exception as e:
-            # dictionary-encoded 'market' kolom fix
-            try:
-                pf = pq.ParquetFile(pth)
-                tbls = [pf.read_row_group(i).replace_schema_metadata({}) for i in range(pf.num_row_groups)]
-                tbl = pa.concat_tables(tbls, promote=True)
-            except Exception:
-                # fallback: forceer type casting voor 'market' als die bestaat
-                try:
-                    tbl = pq.read_table(pth, columns=None)
-                    if 'market' in tbl.column_names:
-                        tbl = tbl.set_column(tbl.column_names.index('market'),
-                                             'market',
-                                             tbl['market'].cast(pa.string()))
-                except Exception:
-                    continue
-        total_rows += tbl.num_rows
+        except Exception:
+            continue
+        total_rows += int(getattr(tbl, "num_rows", 0) or 0)
+
         cols = set(tbl.column_names)
-        for c in ["bestBid","bid","lastBid","best_bid"]:
-            if c in cols:
-                last_bid = tbl[c][-1].as_py()
-                has_bid = True
-                break
-        for c in ["bestAsk","ask","lastAsk","best_ask"]:
-            if c in cols:
-                last_ask = tbl[c][-1].as_py()
-                has_ask = True
-                break
+
+        # update BID als nog niet gezet
+        if last_bid is None:
+            for c in bid_cols:
+                if c in cols:
+                    v = last_non_null_scalar(tbl, c)
+                    if v not in (None, ""):
+                        last_bid = v
+                        break
+
+        # update ASK als nog niet gezet
+        if last_ask is None:
+            for c in ask_cols:
+                if c in cols:
+                    v = last_non_null_scalar(tbl, c)
+                    if v not in (None, ""):
+                        last_ask = v
+                        break
+
+        # optimalisatie: als we beide hebben, hoeven we alleen nog rows te tellen
+        # maar we blijven toch alle rows meetellen (al gedaan), geen break hier.
+
     spread_bps = None
+    has_bid = last_bid not in (None, "")
+    has_ask = last_ask not in (None, "")
+
     if has_bid and has_ask:
         try:
-            bid = float(last_bid); ask = float(last_ask)
-            mid = (bid + ask)/2 if (bid != 0 and ask != 0) else None
-            if mid:
-                spread_bps = (ask - bid)/mid * 10000.0
+            bid = float(last_bid)
+            ask = float(last_ask)
+            if bid > 0.0 and ask > 0.0:
+                mid = (bid + ask) / 2.0
+                spread_bps = (ask - bid) / mid * 10000.0
         except Exception:
-            pass
-    return {"rows": total_rows, "has_bid": has_bid, "has_ask": has_ask, "spread_bps": spread_bps}
+            spread_bps = None
 
-def choose_markets(universe, tick_root: Path, cfg: Dict):
+    return {"rows": total_rows, "has_bid": has_bid, "has_ask": has_ask, "spread_bps": spread_bps}def choose_markets(universe, tick_root: Path, cfg: Dict):
     max_files = int(cfg["inputs"]["max_files_per_market"])
     min_rows = int(cfg["inputs"]["min_rows_per_market"])
     max_spread = float(cfg["selection"]["max_spread_bps"])
