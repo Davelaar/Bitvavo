@@ -1,0 +1,6 @@
+ws_events_ingested_total{channel="ticker"} 1.015584e+06
+ws_events_ingested_total{channel="book"} 13348.0
+ws_events_ingested_total{channel="trade"} 796.0
+ws_parquet_rows_total{channel="ticker"} 1.015584e+06
+ws_parquet_rows_total{channel="book"} 13348.0
+ws_parquet_rows_total{channel="trade"} 796.0

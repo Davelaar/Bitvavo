@@ -1,0 +1,11 @@
+NAMES         STATUS        PORTS
+redis         Up 8 hours    127.0.0.1:6379->6379/tcp
+prometheus    Up 9 hours    9090/tcp
+caddy         Up 9 hours    0.0.0.0:80->80/tcp, [::]:80->80/tcp, 0.0.0.0:443->443/tcp, [::]:443->443/tcp, 443/udp, 2019/tcp
+grafana       Up 9 hours    3000/tcp
+sftp          Up 14 hours   22/tcp
+filestash     Up 14 hours   8334/tcp
+loki          Up 15 hours   3100/tcp
+timescaledb   Up 15 hours   5432/tcp
+promtail      Up 15 hours   
+clickhouse    Up 15 hours   8123/tcp, 9000/tcp, 9009/tcp
