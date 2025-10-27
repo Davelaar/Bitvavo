@@ -1,0 +1,18 @@
+[Unit]
+Description=Trading Core Service (Step 5)
+After=network-online.target redis.service
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=trading
+WorkingDirectory=/srv/trading/tradingbot/services/trading_core
+Environment=TRADING_CORE_CONFIG=/srv/trading/tradingbot/services/trading_core/trading_core/config.yml
+ExecStart=/srv/trading/tradingbot/services/trading_core/.venv/bin/python -m trading_core.main
+Restart=always
+RestartSec=3
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=multi-user.target

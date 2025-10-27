@@ -1,0 +1,25 @@
+# trading_core/config.yml
+redis_url: "redis://localhost:6379/0"
+selection_file: "/srv/trading/common/selection.latest.json"
+poll_interval_ms: 500            # fallback polling for markets without pubsub
+http:
+  host: "0.0.0.0"
+  port: 9105
+execution:
+  mode: "paper"                  # "paper" | "bitvavo"
+  bitvavo:
+    api_key: "PLEASE_SET"
+    api_secret: "PLEASE_SET"
+    # base_url may be left default by SDK; here we keep for clarity
+    rest_base: "https://api.bitvavo.com/v2"
+risk:
+  max_open_positions: 3
+  notional_per_trade_eur: 50
+  take_profit_pct: 0.30          # 0.30% TP
+  stop_loss_pct: 0.25            # 0.25% SL
+signals:
+  min_book_depth_eur: 200        # minimal top-of-book size on each side
+  max_spread_bps: 12             # 0.12% max spread
+  cooldown_s: 120                # per-market cooldown after trade
+logging:
+  level: "INFO"
