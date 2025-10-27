@@ -1,0 +1,21 @@
+services:
+  market_selection:
+    image: python:3.12-slim
+    working_dir: /app
+    volumes:
+      - ./tradingbot/services/market_selection:/app:ro
+      - /srv/trading/common:/srv/trading/common:rw
+      - /srv/trading/data:/srv/trading/data:ro
+    command: >
+      bash -lc "
+      python -m pip install --no-cache-dir pyarrow prometheus_client orjson pyyaml &&
+      exec python -m market_selection.app.main --config market_selection/config/selection.yml"
+    ports:
+      - "9102:9102"
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:9102/metrics"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+    networks:
+      - monitoring
